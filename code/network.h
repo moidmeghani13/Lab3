@@ -262,15 +262,15 @@ int Network<T>::obtain_parameters() {
     
     
     for (int i = 0; i < network_cfg_description.size(); i++){
-        std::string line = network_cfg_description[i];
+        string line = network_cfg_description[i];
         
         if(line == "[net]"){
             string height = network_cfg_description[i+1].substr(network_cfg_description[i+1].find("=")+1);
-            string width = network_cfg_description[i+2].substr(network_cfg_description[i+1].find("=")+1);
-            string channel = network_cfg_description[i+3].substr(network_cfg_description[i+1].find("=")+1);
-            // net_height = stoi(height);
-            // net_width = stoi(width);
-            // net_channel = stoi(channel);
+            string width = network_cfg_description[i+2].substr(network_cfg_description[i+2].find("=")+1);
+            string channel = network_cfg_description[i+3].substr(network_cfg_description[i+3].find("=")+1);
+            net_height = stoi(height);
+            net_width = stoi(width);
+            net_channel = stoi(channel);
 
             cout << network_cfg_description[i+1] << endl;
             cout << network_cfg_description[i+2] << endl;
@@ -288,11 +288,11 @@ int Network<T>::obtain_parameters() {
             input_channel.push_back(net_channel);
 
             string batch_normalize = network_cfg_description[i+1].substr(network_cfg_description[i+1].find("=")+1);
-            string filters = network_cfg_description[i+2].substr(network_cfg_description[i+1].find("=")+1);
-            string k_size = network_cfg_description[i+3].substr(network_cfg_description[i+1].find("=")+1);
-            string stride = network_cfg_description[i+4].substr(network_cfg_description[i+1].find("=")+1);
-            string pad = network_cfg_description[i+5].substr(network_cfg_description[i+1].find("=")+1);
-            string activation = network_cfg_description[i+6].substr(network_cfg_description[i+1].find("=")+1);
+            string filters = network_cfg_description[i+2].substr(network_cfg_description[i+2].find("=")+1);
+            string k_size = network_cfg_description[i+3].substr(network_cfg_description[i+3].find("=")+1);
+            string stride = network_cfg_description[i+4].substr(network_cfg_description[i+4].find("=")+1);
+            string pad = network_cfg_description[i+5].substr(network_cfg_description[i+5].find("=")+1);
+            string activation = network_cfg_description[i+6].substr(network_cfg_description[i+6].find("=")+1);
 
             cout << "batch_normalize: " << batch_normalize << endl;
             cout << "filters: " << filters << endl;
@@ -301,13 +301,13 @@ int Network<T>::obtain_parameters() {
             cout << "pad: " << pad << endl;
             cout << "activation: " << activation << endl;
 
-            // kernel_dimension.push_back(stoi(filters));
-            // kernel_size.push_back(stoi(k_size));
-            // kernel_channel.push_back(net_channel);
+            kernel_dimension.push_back(stoi(filters));
+            kernel_size.push_back(stoi(k_size));
+            kernel_channel.push_back(net_channel);
 
-            // net_height = (net_height + 2*stoi(pad) - stoi(k_size))/stoi(stride) + 1;
-            // net_width = (net_width + 2*stoi(pad) - stoi(k_size))/stoi(stride) + 1;
-            // net_channel = stoi(filters);
+            net_height = (net_height + 2*stoi(pad) - stoi(k_size))/stoi(stride) + 1;
+            net_width = (net_width + 2*stoi(pad) - stoi(k_size))/stoi(stride) + 1;
+            net_channel = stoi(filters);
 
             output_height.push_back(net_height);
             output_width.push_back(net_width);
@@ -315,16 +315,17 @@ int Network<T>::obtain_parameters() {
         }
         else if(line == "[maxpool]"){
             string size = network_cfg_description[i+1].substr(network_cfg_description[i+1].find("=")+1);
-            string stride = network_cfg_description[i+2].substr(network_cfg_description[i+1].find("=")+1);
-            // int size_val = stoi(size);
-            // int stride_val = stoi(stride);
+            string stride = network_cfg_description[i+2].substr(network_cfg_description[i+2].find("=")+1);
+            int size_val = stoi(size);
+            int stride_val = stoi(stride);
 
             cout << "size: " << size << endl;
             cout << "stride: " << stride << endl;
 
-            // net_height = (net_height - size_val)/stride_val + 1;
-            // net_width = (net_width - size_val)/stride_val + 1;
-        } else {
+            net_height = (net_height - size_val)/stride_val + 1;
+            net_width = (net_width - size_val)/stride_val + 1;
+        } 
+        else {
             continue;
         }
     }
