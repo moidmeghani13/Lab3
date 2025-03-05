@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     /********/
 
     test->generate_layer_file_paths();
-    //test->generate_input_kernel();
+    test->generate_input_kernel();
     test->generate_matrix();
     test->generate_stream();
 
