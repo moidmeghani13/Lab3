@@ -448,6 +448,7 @@ int Network<T>::conv_convert_stream(int layer_id, int padding, int stride, Strea
         numElementsinBuffer++;
     }
     while(numElementsinBuffer < buffer_size){
+        cout << "buffer_size: " << buffer_size << endl;
         cout << "numElementsinBuffer1: " << numElementsinBuffer << endl;
         for(int i=0; i<input_channel[layer_id]; i++){
             buffer[numElementsinBuffer] = 0;
@@ -469,18 +470,25 @@ int Network<T>::conv_convert_stream(int layer_id, int padding, int stride, Strea
     cout << "numElementsinBuffer: " << numElementsinBuffer << endl;
     cout << endl;
 
-    for(int kRow = 0; kRow<maxNumRows; kRow+=stride){
+    for(int kRow = 0; kRow<maxNumRows-kernel_size[layer_id]+1; kRow+=stride){
         cout << "kRow: " << kRow << endl;
-        for(int kCol = 0; kCol<maxNumCols; kCol+=stride){
+        for(int kCol = 0; kCol<maxNumCols-kernel_size[layer_id]+1; kCol+=stride){
             cout << "kCol: " << kCol << endl;
-            for(int i=kRow-BufferStartingRow; i<kRow+kernel_size[layer_id];i++){
+            for(int i=kRow-(BufferStartingRow); i<kernel_size[layer_id];i++){
                 cout << "i: " << i << endl;
                 for(int j=kCol; j<kCol+kernel_size[layer_id];j++){
+                    //cout << "j: " << j << endl;
+                    cout << "input_channel[layer_id]: " << input_channel[layer_id] << endl;
+                    cout << "maxNumCols: " << maxNumCols << endl;
+                    cout << "i: " << i << endl;
                     cout << "j: " << j << endl;
                     int bufIndex = input_channel[layer_id]*maxNumCols*i + input_channel[layer_id]*j;
+                    cout << "buffer_size: " << buffer_size << endl;
+                    cout << "numElementsinBuffer: " << numElementsinBuffer << endl;
                     cout << "bufIndex: " << bufIndex << endl;
                     for(int k=0; k<input_channel[layer_id]; k++){
-                        cout << "buffer[bufIndex+k]: " << buffer[bufIndex+k] << endl;
+                        //cout << "buffer[bufIndex+k]: " << buffer[bufIndex+k] << endl;
+                        cout << "buffer[" << bufIndex+k << "]: " << buffer[bufIndex+k] << endl;
                         output.write(buffer[bufIndex+k]);
                     }
                 }
@@ -489,7 +497,19 @@ int Network<T>::conv_convert_stream(int layer_id, int padding, int stride, Strea
         numElementsinBuffer = 0;
         BufferStartingRow += stride;
         if(stride==kernel_size[layer_id]){
+            cout << "here 1" << endl;
             while(numElementsinBuffer < buffer_size){
+                if(input.empty()){
+                    while(numElementsinBuffer < buffer_size){
+                        buffer[numElementsinBuffer] = 0;
+                        numElementsinBuffer++;
+                    }
+                    break;
+                }
+                for(int i =0; i<buffer_size; i++){
+                    cout << buffer[i] << " ";
+                }
+                cout << "buffer_size: " << buffer_size << endl;
                 cout << "numElementsinBuffer2: " << numElementsinBuffer << endl;
                 for(int i=0; i<input_channel[layer_id]; i++){
                     buffer[numElementsinBuffer] = 0;
@@ -506,11 +526,23 @@ int Network<T>::conv_convert_stream(int layer_id, int padding, int stride, Strea
             }
         }
         else{
+            cout << "here 2" << endl;
             for(int i = stride*(2*padding+input_width[layer_id])*input_channel[layer_id]; i<buffer_size; i++){
                 buffer[numElementsinBuffer] = buffer[i];
                 numElementsinBuffer++;
             }
             while(numElementsinBuffer < buffer_size){
+                if(input.empty()){
+                    while(numElementsinBuffer < buffer_size){
+                        buffer[numElementsinBuffer] = 0;
+                        numElementsinBuffer++;
+                    }
+                    break;
+                }
+                for(int i =0; i<buffer_size; i++){
+                    cout << buffer[i] << " ";
+                }
+                cout << "buffer_size: " << buffer_size << endl;
                 cout << "numElementsinBuffer3: " << numElementsinBuffer << endl;
                 for(int i=0; i<input_channel[layer_id]; i++){
                     buffer[numElementsinBuffer] = 0;
@@ -526,6 +558,12 @@ int Network<T>::conv_convert_stream(int layer_id, int padding, int stride, Strea
                 }
             }
         }
+        for(int i =0; i<buffer_size; i++){
+        cout << buffer[i] << " ";
+    }
+    cout << "buffer_size: " << buffer_size << endl;
+    cout << "numElementsinBuffer: " << numElementsinBuffer << endl;
+    cout << endl;
     }
 
     for(int i =0; i<buffer_size; i++){
