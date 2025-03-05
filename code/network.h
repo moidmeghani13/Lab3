@@ -272,13 +272,13 @@ int Network<T>::obtain_parameters() {
             net_width = stoi(width);
             net_channel = stoi(channel);
 
-            cout << network_cfg_description[i+1] << endl;
-            cout << network_cfg_description[i+2] << endl;
-            cout << network_cfg_description[i+3] << endl;
+            // cout << network_cfg_description[i+1] << endl;
+            // cout << network_cfg_description[i+2] << endl;
+            // cout << network_cfg_description[i+3] << endl;
             
-            cout << "height: " << height << endl;
-            cout << "width: " << width << endl;
-            cout << "channel: " << channel << endl;
+            // cout << "height: " << height << endl;
+            // cout << "width: " << width << endl;
+            // cout << "channel: " << channel << endl;
         }
         else if(line == "[convolutional]"){
             layer_number++;
@@ -294,12 +294,12 @@ int Network<T>::obtain_parameters() {
             string pad = network_cfg_description[i+5].substr(network_cfg_description[i+5].find("=")+1);
             string activation = network_cfg_description[i+6].substr(network_cfg_description[i+6].find("=")+1);
 
-            cout << "batch_normalize: " << batch_normalize << endl;
-            cout << "filters: " << filters << endl;
-            cout << "k_size: " << k_size << endl;
-            cout << "stride: " << stride << endl;
-            cout << "pad: " << pad << endl;
-            cout << "activation: " << activation << endl;
+            // cout << "batch_normalize: " << batch_normalize << endl;
+            // cout << "filters: " << filters << endl;
+            // cout << "k_size: " << k_size << endl;
+            // cout << "stride: " << stride << endl;
+            // cout << "pad: " << pad << endl;
+            // cout << "activation: " << activation << endl;
 
             kernel_dimension.push_back(stoi(filters));
             kernel_size.push_back(stoi(k_size));
@@ -319,8 +319,8 @@ int Network<T>::obtain_parameters() {
             int size_val = stoi(size);
             int stride_val = stoi(stride);
 
-            cout << "size: " << size << endl;
-            cout << "stride: " << stride << endl;
+            // cout << "size: " << size << endl;
+            // cout << "stride: " << stride << endl;
 
             net_height = (net_height - size_val)/stride_val + 1;
             net_width = (net_width - size_val)/stride_val + 1;
@@ -338,6 +338,104 @@ int Network<T>::conv_convert(int layer_id, int padding, int stride, Array3D<T>& 
                               Array2D<T>& input_matrix, Array2D<T>& kernel_matrix) {
     /* Part II */
     /*Write your code here*/
+    int numChannels=initial_input.Size_1d();
+    int numHeight=initial_input.Size_3d();
+    cout << "numHeight: " << numHeight << endl;
+    int numWidth=initial_input.Size_2d();
+    cout << "numWidth: " << numWidth << endl;
+    cout << "padding: " << padding << endl;
+
+    int kernelSize=initial_kernel.Size_2d();
+    cout << "kernelSize: " << kernelSize << endl;
+    int kernelMinHeight=0;
+    cout << "kernelMinHeight: " << kernelMinHeight << endl;
+    int kernelMaxHeight=kernelMinHeight+kernelSize-1;
+    cout << "kernelMaxHeight: " << kernelMaxHeight << endl;
+    int kernelMinWidth=0;
+    cout << "kernelMinWidth: " << kernelMinWidth << endl;
+    int kernelMaxWidth=kernelMinWidth+kernelSize-1;
+    cout << "kernelMaxWidth: " << kernelMaxWidth << endl;
+
+    int totalHeight = numHeight+2*padding;
+    cout << "totalHeight: " << totalHeight << endl;
+    int totalWidth = numWidth+2*padding;
+    cout << "totalWidth: " << totalWidth << endl;
+
+    Array2D<T> tempInputMatrix((((totalHeight-kernelSize)/stride)+1) * (((totalWidth-kernelSize)/stride)+1),kernelSize*kernelSize*numChannels);
+    cout << "tempInputMatrix.Size_2d(): " << tempInputMatrix.Size_2d() << endl;
+    cout << "tempInputMatrix.Size_1d(): " << tempInputMatrix.Size_1d() << endl;
+
+    int currTempInputMatrixHeight = 0;
+
+    for(int i=0;i<numChannels;i++){     //Padding
+        Array2D<T> temp(numHeight+2*padding,numWidth+2*padding);
+        for(int j=0;j<numHeight+2*padding;j++){ //height
+            for(int k=0;k<numWidth+2*padding;k++){
+                if(j<padding || j>=numHeight+padding || k<padding || k>=numWidth+padding){
+                    temp[j][k]=0;
+                    cout << "temp[" << j << "][" << k << "]: " << temp[j][k] << endl;
+                }
+                else{
+                    temp[j][k]=initial_input[j-padding][k-padding][i];
+                    cout << "temp[" << j << "][" << k << "]: " << temp[j][k] << endl;
+                }
+            }
+        }
+
+        //print the array
+        cout << "Channel " << i << endl;
+        for(int j=0;j<numHeight+2*padding;j++){
+            for(int k=0;k<numWidth+2*padding;k++){
+                cout<<temp[j][k]<<" ";
+            }
+            cout<<endl;
+        } 
+
+        currTempInputMatrixHeight = 0;
+        for(int j=0;j<totalHeight-kernelSize+1;j+=stride){
+            kernelMinHeight=j;
+            kernelMaxHeight=j+kernelSize-1;
+            for(int k=0;k<totalWidth-kernelSize+1;k+=stride){
+                int kernelIndex = 0;
+                kernelMinWidth=k;
+                kernelMaxWidth=k+kernelSize-1;
+                cout << "currTempInputMatrixHeight: " << currTempInputMatrixHeight << endl;
+                cout << kernelMinHeight << " " << kernelMaxHeight << " " << kernelMinWidth << " " << kernelMaxWidth << endl;
+                for(int l=kernelMinHeight;l<=kernelMaxHeight;l++){
+                    for(int m=kernelMinWidth;m<=kernelMaxWidth;m++){
+                        //cout<<"l: "<<l<<" m: "<<m<<endl;
+                        //cout << "temp[" << l << "][" << m << "]: " << temp[l][m] << endl;
+                        //cout << "currTempInputMatrixHeight: " << currTempInputMatrixHeight << endl;
+                        //cout << "kernelIndex*kernelSize+i: " << (kernelIndex*kernelSize)+i << endl;
+                        //cout << "temp[" << l << "][" << m << "]: " << temp[l][m] << endl;
+                        tempInputMatrix[currTempInputMatrixHeight][(kernelIndex*numChannels)+i] = temp[l][m];
+                        //cout << "temp[" << l << "][" << m << "]: " << temp[l][m] << endl;
+                        cout << "tempInputMatrix[" << currTempInputMatrixHeight << "][" << (kernelIndex*numChannels)+i << "]: " << tempInputMatrix[currTempInputMatrixHeight][(kernelIndex*kernelSize)+i] << endl;
+                        kernelIndex++;
+                    }
+                }
+                currTempInputMatrixHeight++;
+                //cout << kernelMinHeight << " " << kernelMaxHeight << " " << kernelMinWidth << " " << kernelMaxWidth << endl;
+            }
+        }
+        kernelMinHeight=0;
+        kernelMaxHeight=kernelMinHeight+kernelSize-1;
+        kernelMinWidth=0;
+        kernelMaxWidth=kernelMinWidth+kernelSize-1;
+    }
+
+    // input_matrix.resize(tempInputMatrix.Size_2d(),tempInputMatrix.Size_1d());
+    // input_matrix = tempInputMatrix;
+    for(int j=0;j<tempInputMatrix.Size_2d();j++){
+        for(int k=0;k<tempInputMatrix.Size_1d();k++){
+            cout<<tempInputMatrix[j][k]<<" ";
+        }
+        cout<<endl;
+    } 
+
+
+
+    
 
     return 0;
 }
